@@ -1,0 +1,32 @@
+# Maven build output
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE specific files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+*.ipr
+*.iws
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Generated invoices (keep folder structure)
+invoices/*.pdf
+!invoices/.gitkeep
+
+# System logs
+error_log.txt
