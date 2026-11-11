@@ -117,24 +117,28 @@ public class DatabaseConnection {
     }
 
     /**
-     * Allows dynamic runtime override of database credentials.
+     * Static helper to allow dynamic runtime update of database credentials.
      *
      * @param url Database JDBC URL.
      * @param user Database user.
      * @param password Database password.
      */
-    public synchronized void setCredentials(String url, String user, String password) {
+    public static void setCredentials(String url, String user, String password) {
+        getInstance().updateCredentials(url, user, password);
+    }
+
+    public synchronized void updateCredentials(String url, String user, String password) {
         this.dbUrl = url;
         this.dbUser = user;
         this.dbPassword = password;
         LoggerUtil.logInfo("Database credentials updated manually: " + url + " | user=" + user);
     }
 
-    public String getDbUrl() {
-        return dbUrl;
+    public static String getDbUrl() {
+        return getInstance().dbUrl;
     }
 
-    public String getDbUser() {
-        return dbUser;
+    public static String getDbUser() {
+        return getInstance().dbUser;
     }
 }

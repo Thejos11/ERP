@@ -1,32 +1,24 @@
 package com.littlehorizons.erp;
 
-import com.littlehorizons.erp.util.DatabaseConnection;
 import com.littlehorizons.erp.util.LoggerUtil;
+import com.littlehorizons.erp.view.ConsoleView;
 
 /**
- * Entry point for the Little Horizons ERP System.
+ * Main application entry point for the Little Horizons ERP educational system.
+ * Starts the console interface and ensures uncaught exceptions are caught and logged.
  */
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("==================================================");
-        System.out.println("   Little Horizons ERP - Educational System       ");
-        System.out.println("==================================================");
-        
-        LoggerUtil.logInfo("System startup initiated.");
-
-        DatabaseConnection dbConn = DatabaseConnection.getInstance();
-        System.out.println("Connecting using URL: " + dbConn.getDbUrl());
-        System.out.println("Connecting using User: " + dbConn.getDbUser());
-
-        boolean isConnected = dbConn.testConnection();
-        if (isConnected) {
-            System.out.println("✅ Database connection successful!");
-            LoggerUtil.logInfo("Database connection established successfully.");
-        } else {
-            System.out.println("⚠️ Warning: Could not connect to the database.");
-            System.out.println("Please check your db.properties file or make sure MySQL is running.");
-            LoggerUtil.logWarning("Initial database connection test failed.");
+        LoggerUtil.logInfo("Starting Little Horizons ERP Application...");
+        try {
+            ConsoleView consoleView = new ConsoleView();
+            consoleView.start();
+        } catch (Exception e) {
+            LoggerUtil.logError("Fatal unhandled exception in main execution loop", e);
+            System.err.println("❌ Ha ocurrido un error inesperado. Los detalles han sido registrados en error_log.txt.");
+        } finally {
+            LoggerUtil.logInfo("Little Horizons ERP Application stopped.");
         }
     }
 }
