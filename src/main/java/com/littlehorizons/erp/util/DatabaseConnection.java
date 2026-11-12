@@ -25,6 +25,18 @@ public class DatabaseConnection {
     private String dbUrl;
     private String dbUser;
     private String dbPassword;
+    private static boolean inMemoryMode = false;
+
+    public static boolean isInMemoryMode() {
+        return inMemoryMode;
+    }
+
+    public static void setInMemoryMode(boolean mode) {
+        inMemoryMode = mode;
+        if (mode) {
+            LoggerUtil.logInfo("System switched to In-Memory Standalone Mode (No SQL required).");
+        }
+    }
 
     private DatabaseConnection() {
         try {

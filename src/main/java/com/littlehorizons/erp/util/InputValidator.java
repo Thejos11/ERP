@@ -170,6 +170,11 @@ public class InputValidator {
      */
     public static void pause() {
         System.out.print("\nPresione ENTER para continuar...");
-        SCANNER.nextLine();
+        try {
+            if (SCANNER.hasNextLine()) {
+                SCANNER.nextLine();
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

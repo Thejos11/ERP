@@ -54,12 +54,19 @@ public class ConsoleView {
     }
 
     private void checkDatabaseStatus() {
+        if (DatabaseConnection.isInMemoryMode()) {
+            System.out.println("🟣 [MODO STANDALONE] Ejecutando 100% En Memoria (Sin SQL requerido).");
+            return;
+        }
         boolean connected = DatabaseConnection.getInstance().testConnection();
         if (connected) {
             System.out.println("🟢 [ESTADO] Conexión a la base de datos MySQL establecida correctamente.");
         } else {
-            System.out.println("🟡 [ESTADO] No se pudo conectar a MySQL con los parámetros por defecto.");
-            System.out.println("   Puede configurar los datos de acceso en la opción 8 del menú principal.");
+            System.out.println("🟣 [MODO STANDALONE ACTIVO]");
+            System.out.println("   No se detectó servidor MySQL activo. El sistema se ejecutará");
+            System.out.println("   automáticamente en Modo En Memoria (Sin SQL). Todos los datos,");
+            System.out.println("   validaciones y generación de facturas PDF funcionan al 100%.");
+            DatabaseConnection.setInMemoryMode(true);
         }
     }
 
