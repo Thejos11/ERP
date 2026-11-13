@@ -54,7 +54,27 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/db.properties</exclude>
+                    <exclude>**/db.properties.*</exclude>
+                    <exclude>**/db.integration.properties</exclude>
+                    <exclude>**/db.integration.properties.*</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <excludedGroups>integration</excludedGroups>
+                    <excludes><exclude>**/*IT.java</exclude></excludes>
+                </configuration>
+            </plugin>
             <!-- Compiler plugin configured for Java 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,4 +109,45 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>integration</id>
+            <properties>
+                <integration.write.enabled>false</integration.write.enabled>
+                <integration.config>${project.basedir}/.local-secrets/integration.properties</integration.config>
+                <integration.verifier.config>${project.basedir}/.local-secrets/integration-provisioner.properties</integration.verifier.config>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <includes><include>**/*IT.java</include></includes>
+                            <groups>integration</groups>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                            <failIfNoTests>true</failIfNoTests>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <systemPropertyVariables>
+                                <integration.write.enabled>${integration.write.enabled}</integration.write.enabled>
+                                <integration.config>${integration.config}</integration.config>
+                                <integration.verifier.config>${integration.verifier.config}</integration.verifier.config>
+                                <integration.project>${project.basedir}</integration.project>
+                            </systemPropertyVariables>
+                            <environmentVariables>
+                                <DB_URL>jdbc:mysql://127.0.0.1:1/integration_disabled</DB_URL>
+                                <DB_USER>integration_disabled</DB_USER>
+                                <DB_PASSWORD>integration_disabled</DB_PASSWORD>
+                            </environmentVariables>
+                        </configuration>
+                        <executions>
+                            <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

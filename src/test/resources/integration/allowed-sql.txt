@@ -1,0 +1,96 @@
+INSERT INTO materias (codigo_materia, nombre_materia, descripcion, id_grado, horas_semanales, esta_activa) VALUES (?, ?, ?, ?, ?, ?)
+SELECT m.*, g.nombre_grado FROM materias m JOIN grados g ON m.id_grado = g.id_grado WHERE m.id_materia = ?
+SELECT m.*, g.nombre_grado FROM materias m JOIN grados g ON m.id_grado = g.id_grado WHERE m.id_grado = ? AND m.esta_activa = TRUE
+SELECT m.*, g.nombre_grado FROM materias m JOIN grados g ON m.id_grado = g.id_grado ORDER BY g.nivel_numerico, m.nombre_materia
+INSERT INTO inscripciones_materia (id_estudiante, id_materia, año_academico, periodo_academico, seccion, fecha_inscripcion, estado) VALUES (?, ?, ?, ?, ?, CURDATE(), 'Activa')
+SELECT im.*, m.nombre_materia, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM inscripciones_materia im JOIN materias m ON im.id_materia = m.id_materia JOIN estudiantes e ON im.id_estudiante = e.id_estudiante WHERE im.id_estudiante = ? AND im.año_academico = ? AND im.periodo_academico = ?
+INSERT INTO registros_academicos (id_estudiante, id_materia, id_profesor, año_academico, periodo_academico, valor_nota, observaciones, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, CURDATE()) ON DUPLICATE KEY UPDATE valor_nota = VALUES(valor_nota), observaciones = VALUES(observaciones), fecha_actualizacion = CURRENT_TIMESTAMP
+SELECT ra.*, m.nombre_materia, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM registros_academicos ra JOIN materias m ON ra.id_materia = m.id_materia JOIN estudiantes e ON ra.id_estudiante = e.id_estudiante JOIN profesores p ON ra.id_profesor = p.id_profesor WHERE ra.id_estudiante = ? ORDER BY ra.año_academico DESC, ra.periodo_academico, m.nombre_materia
+SELECT ra.*, m.nombre_materia, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM registros_academicos ra JOIN materias m ON ra.id_materia = m.id_materia JOIN estudiantes e ON ra.id_estudiante = e.id_estudiante JOIN profesores p ON ra.id_profesor = p.id_profesor WHERE ra.id_materia = ? AND ra.año_academico = ? AND ra.periodo_academico = ? ORDER BY e.primer_apellido
+INSERT INTO asistencias (id_estudiante, id_materia, fecha_asistencia, estado_asistencia, observaciones, registrado_por) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE estado_asistencia = VALUES(estado_asistencia), observaciones = VALUES(observaciones)
+SELECT a.*, m.nombre_materia, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM asistencias a JOIN materias m ON a.id_materia = m.id_materia JOIN estudiantes e ON a.id_estudiante = e.id_estudiante WHERE a.id_estudiante = ? ORDER BY a.fecha_asistencia DESC
+SELECT CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, e.numero_documento, COUNT(*) AS total_faltas FROM asistencias a JOIN estudiantes e ON a.id_estudiante = e.id_estudiante WHERE a.estado_asistencia = 'Ausente' AND a.fecha_asistencia BETWEEN ? AND ? GROUP BY e.id_estudiante, e.primer_nombre, e.primer_apellido, e.numero_documento HAVING total_faltas >= ? ORDER BY total_faltas DESC
+INSERT INTO clubes (nombre_club, descripcion, id_profesor_supervisor, capacidad_maxima, horario_reunion, esta_activo) VALUES (?, ?, ?, ?, ?, ?)
+SELECT c.*, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof, (SELECT COUNT(*) FROM membresias_club mc WHERE mc.id_club = c.id_club AND mc.estado_membresia = 'Activa') AS total_activos FROM clubes c LEFT JOIN profesores p ON c.id_profesor_supervisor = p.id_profesor WHERE c.id_club = ?
+SELECT c.*, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof, (SELECT COUNT(*) FROM membresias_club mc WHERE mc.id_club = c.id_club AND mc.estado_membresia = 'Activa') AS total_activos FROM clubes c LEFT JOIN profesores p ON c.id_profesor_supervisor = p.id_profesor ORDER BY c.nombre_club
+SELECT COUNT(*) FROM membresias_club WHERE id_club = ? AND estado_membresia = 'Activa'
+INSERT INTO membresias_club (id_estudiante, id_club, fecha_ingreso, estado_membresia) VALUES (?, ?, ?, 'Activa')
+UPDATE membresias_club SET estado_membresia = 'Retirada', fecha_retiro = CURDATE(), motivo_retiro = ? WHERE id_membresia = ?
+SELECT mc.*, c.nombre_club, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM membresias_club mc JOIN clubes c ON mc.id_club = c.id_club JOIN estudiantes e ON mc.id_estudiante = e.id_estudiante WHERE mc.id_estudiante = ? ORDER BY mc.fecha_ingreso DESC
+SELECT mc.*, c.nombre_club, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM membresias_club mc JOIN clubes c ON mc.id_club = c.id_club JOIN estudiantes e ON mc.id_estudiante = e.id_estudiante WHERE mc.id_club = ? ORDER BY mc.estado_membresia, e.primer_apellido
+INSERT INTO eventos (nombre_evento, descripcion, tipo_evento, fecha_evento, lugar, tiene_competencia, id_organizador, esta_activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+SELECT ev.*, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM eventos ev LEFT JOIN profesores p ON ev.id_organizador = p.id_profesor WHERE ev.id_evento = ?
+SELECT ev.*, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM eventos ev LEFT JOIN profesores p ON ev.id_organizador = p.id_profesor ORDER BY ev.fecha_evento
+INSERT INTO participantes_evento (id_evento, id_estudiante, rol_participacion, posicion_obtenida, observaciones) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE rol_participacion = VALUES(rol_participacion), posicion_obtenida = VALUES(posicion_obtenida), observaciones = VALUES(observaciones)
+SELECT pe.*, ev.nombre_evento, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM participantes_evento pe JOIN eventos ev ON pe.id_evento = ev.id_evento JOIN estudiantes e ON pe.id_estudiante = e.id_estudiante WHERE pe.id_evento = ? ORDER BY pe.posicion_obtenida, e.primer_apellido
+SELECT * FROM conceptos_pago WHERE esta_activo = TRUE ORDER BY id_concepto
+SELECT * FROM conceptos_pago WHERE id_concepto = ?
+INSERT INTO conceptos_pago (codigo_concepto, nombre_concepto, descripcion, monto_base, es_recurrente, esta_activo) VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO pagos (id_estudiante, id_acudiente, id_concepto, monto_pagado, fecha_pago, metodo_pago, numero_recibo, año_academico, periodo_academico, notas) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+SELECT p.*, cp.nombre_concepto, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, CONCAT(a.primer_nombre, ' ', a.primer_apellido) AS nom_acud FROM pagos p JOIN conceptos_pago cp ON p.id_concepto = cp.id_concepto JOIN estudiantes e ON p.id_estudiante = e.id_estudiante LEFT JOIN acudientes a ON p.id_acudiente = a.id_acudiente WHERE p.id_pago = ?
+SELECT p.*, cp.nombre_concepto, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, CONCAT(a.primer_nombre, ' ', a.primer_apellido) AS nom_acud FROM pagos p JOIN conceptos_pago cp ON p.id_concepto = cp.id_concepto JOIN estudiantes e ON p.id_estudiante = e.id_estudiante LEFT JOIN acudientes a ON p.id_acudiente = a.id_acudiente WHERE p.id_estudiante = ? ORDER BY p.fecha_pago DESC
+SELECT p.*, cp.nombre_concepto, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, CONCAT(a.primer_nombre, ' ', a.primer_apellido) AS nom_acud FROM pagos p JOIN conceptos_pago cp ON p.id_concepto = cp.id_concepto JOIN estudiantes e ON p.id_estudiante = e.id_estudiante LEFT JOIN acudientes a ON p.id_acudiente = a.id_acudiente WHERE p.id_acudiente = ? ORDER BY p.fecha_pago DESC
+SELECT e.id_estudiante, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est, e.numero_documento, MAX(p.fecha_pago) AS ultimo_pago FROM estudiantes e LEFT JOIN pagos p ON e.id_estudiante = p.id_estudiante AND p.id_concepto = 2 WHERE e.estado = 'Activo' GROUP BY e.id_estudiante, e.primer_nombre, e.primer_apellido, e.numero_documento HAVING ultimo_pago IS NULL OR ultimo_pago < DATE_SUB(CURDATE(), INTERVAL 30 DAY) ORDER BY ultimo_pago ASC
+INSERT INTO facturas (numero_factura, id_pago, fecha_emision, cufe, nombre_archivo_pdf, ruta_archivo) VALUES (?, ?, ?, ?, ?, ?)
+SELECT COUNT(*) FROM facturas
+SELECT COUNT(*) FROM pagos
+INSERT INTO acudientes (tipo_documento, numero_documento, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, parentesco, telefono_principal, telefono_secundario, correo_electronico, direccion, ocupacion, es_responsable_financiero) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+SELECT * FROM acudientes WHERE id_acudiente = ?
+SELECT * FROM acudientes WHERE numero_documento = ?
+SELECT * FROM acudientes ORDER BY primer_apellido, primer_nombre
+SELECT * FROM categorias_recurso ORDER BY id_categoria
+INSERT INTO recursos (codigo_recurso, nombre_recurso, id_categoria, descripcion, fecha_adquisicion, ubicacion_fisica, estado_recurso) VALUES (?, ?, ?, ?, ?, ?, ?)
+SELECT r.*, c.nombre_categoria FROM recursos r JOIN categorias_recurso c ON r.id_categoria = c.id_categoria WHERE r.id_recurso = ?
+SELECT r.*, c.nombre_categoria FROM recursos r JOIN categorias_recurso c ON r.id_categoria = c.id_categoria ORDER BY c.nombre_categoria, r.nombre_recurso
+UPDATE recursos SET estado_recurso = ? WHERE id_recurso = ?
+INSERT INTO prestamos_estudiante (id_recurso, id_estudiante, fecha_prestamo, fecha_devolucion_esperada, estado_prestamo, observaciones) VALUES (?, ?, ?, ?, 'Activo', ?)
+UPDATE recursos SET estado_recurso = 'Prestado' WHERE id_recurso = ?
+UPDATE prestamos_estudiante SET fecha_devolucion_real = ?, estado_prestamo = 'Devuelto', observaciones = CONCAT(IFNULL(observaciones,''), ' | Retorno: ', ?) WHERE id_prestamo = ?
+UPDATE recursos SET estado_recurso = 'Disponible' WHERE id_recurso = ?
+SELECT pe.*, r.nombre_recurso, r.codigo_recurso, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM prestamos_estudiante pe JOIN recursos r ON pe.id_recurso = r.id_recurso JOIN estudiantes e ON pe.id_estudiante = e.id_estudiante WHERE pe.estado_prestamo = 'Activo' ORDER BY pe.fecha_devolucion_esperada
+SELECT pe.*, r.nombre_recurso, r.codigo_recurso, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM prestamos_estudiante pe JOIN recursos r ON pe.id_recurso = r.id_recurso JOIN estudiantes e ON pe.id_estudiante = e.id_estudiante WHERE pe.estado_prestamo = 'Vencido' OR (pe.estado_prestamo = 'Activo' AND pe.fecha_devolucion_esperada < CURDATE()) ORDER BY pe.fecha_devolucion_esperada
+INSERT INTO prestamos_profesor (id_recurso, id_profesor, fecha_prestamo, fecha_devolucion_esperada, estado_prestamo, observaciones) VALUES (?, ?, ?, ?, 'Activo', ?)
+UPDATE recursos SET estado_recurso = 'Prestado' WHERE id_recurso = ?
+UPDATE prestamos_profesor SET fecha_devolucion_real = ?, estado_prestamo = 'Devuelto', observaciones = CONCAT(IFNULL(observaciones,''), ' | Retorno: ', ?) WHERE id_prestamo = ?
+UPDATE recursos SET estado_recurso = 'Disponible' WHERE id_recurso = ?
+SELECT pp.*, r.nombre_recurso, r.codigo_recurso, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM prestamos_profesor pp JOIN recursos r ON pp.id_recurso = r.id_recurso JOIN profesores p ON pp.id_profesor = p.id_profesor WHERE pp.estado_prestamo = 'Activo' ORDER BY pp.fecha_devolucion_esperada
+SELECT pp.*, r.nombre_recurso, r.codigo_recurso, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM prestamos_profesor pp JOIN recursos r ON pp.id_recurso = r.id_recurso JOIN profesores p ON pp.id_profesor = p.id_profesor WHERE pp.estado_prestamo = 'Vencido' OR (pp.estado_prestamo = 'Activo' AND pp.fecha_devolucion_esperada < CURDATE()) ORDER BY pp.fecha_devolucion_esperada
+INSERT INTO estudiantes (tipo_documento, numero_documento, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, fecha_nacimiento, genero, direccion, telefono, correo_electronico, tipo_sangre, alergias, condiciones_medicas, fecha_ingreso, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+SELECT * FROM estudiantes WHERE id_estudiante = ?
+SELECT * FROM estudiantes WHERE numero_documento = ?
+SELECT * FROM estudiantes ORDER BY primer_apellido, primer_nombre
+INSERT INTO estudiante_acudiente (id_estudiante, id_acudiente, es_principal, es_contacto_emergencia) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE es_principal = VALUES(es_principal), es_contacto_emergencia = VALUES(es_contacto_emergencia)
+SELECT a.* FROM acudientes a JOIN estudiante_acudiente ea ON a.id_acudiente = ea.id_acudiente WHERE ea.id_estudiante = ? ORDER BY ea.es_principal DESC
+SELECT e.* FROM estudiantes e JOIN estudiante_acudiente ea ON e.id_estudiante = ea.id_estudiante WHERE ea.id_acudiente = ?
+INSERT INTO matriculas (id_estudiante, id_grado, año_academico, estado_matricula, fecha_matricula, observaciones) VALUES (?, ?, ?, 'Activa', CURDATE(), ?)
+SELECT m.*, g.nombre_grado, CONCAT(e.primer_nombre, ' ', e.primer_apellido) AS nom_est FROM matriculas m JOIN grados g ON m.id_grado = g.id_grado JOIN estudiantes e ON m.id_estudiante = e.id_estudiante WHERE m.id_estudiante = ? ORDER BY m.año_academico DESC
+SELECT * FROM grados ORDER BY nivel_numerico
+INSERT INTO profesores (tipo_documento, numero_documento, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, correo_electronico, telefono, especializacion, fecha_contratacion, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+SELECT * FROM profesores WHERE id_profesor = ?
+SELECT * FROM profesores WHERE numero_documento = ?
+SELECT * FROM profesores ORDER BY primer_apellido, primer_nombre
+INSERT INTO asignaciones_profesor (id_profesor, id_materia, año_academico, seccion) VALUES (?, ?, ?, ?)
+SELECT ap.*, m.nombre_materia, m.codigo_materia, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM asignaciones_profesor ap JOIN materias m ON ap.id_materia = m.id_materia JOIN profesores p ON ap.id_profesor = p.id_profesor WHERE ap.id_profesor = ? AND ap.año_academico = ?
+SELECT ap.*, m.nombre_materia, m.codigo_materia, CONCAT(p.primer_nombre, ' ', p.primer_apellido) AS nom_prof FROM asignaciones_profesor ap JOIN materias m ON ap.id_materia = m.id_materia JOIN profesores p ON ap.id_profesor = p.id_profesor WHERE ap.año_academico = ? ORDER BY p.primer_apellido, m.nombre_materia
+SELECT COUNT(*) FROM registros_academicos WHERE id_estudiante=?
+SELECT COUNT(*) FROM participantes_evento WHERE id_evento=? AND rol_participacion='Competidor'
+SELECT COUNT(*) FROM facturas WHERE id_pago=?
+SELECT COUNT(*) FROM prestamos_estudiante WHERE id_prestamo=? AND estado_prestamo='Devuelto'
+SELECT COUNT(*) FROM prestamos_profesor WHERE id_prestamo=? AND estado_prestamo='Devuelto'
+SELECT COUNT(*) FROM prestamos_estudiante WHERE id_recurso=?
+SELECT COUNT(*) FROM estudiantes WHERE numero_documento=?
+INSERT INTO recursos (codigo_recurso,nombre_recurso,id_categoria) VALUES (?,?,?)
+INSERT INTO recursos (codigo_recurso,nombre_recurso,id_categoria) VALUES (?,?,?)
+SELECT COUNT(*) FROM recursos WHERE codigo_recurso=?
+INSERT INTO recursos (codigo_recurso,nombre_recurso,id_categoria) VALUES (?,?,?)
+SELECT COUNT(*) FROM recursos WHERE codigo_recurso=?
+SELECT id_grado FROM grados WHERE nivel_numerico=0
+SELECT id_categoria FROM categorias_recurso WHERE nombre_categoria='Libro'
+SELECT id_concepto FROM conceptos_pago WHERE codigo_concepto='PENSION'
+INSERT INTO profesores (numero_documento,primer_nombre,primer_apellido,correo_electronico,fecha_contratacion) VALUES (?,?,?,?,?)
+INSERT INTO acudientes (numero_documento,primer_nombre,primer_apellido,parentesco,telefono_principal) VALUES (?,?,?,?,?)
+INSERT INTO materias (codigo_materia,nombre_materia,id_grado) VALUES (?,?,?)
+INSERT INTO estudiantes (numero_documento,primer_nombre,primer_apellido,fecha_nacimiento,genero,fecha_ingreso) VALUES (?,?,?,?,?,?)
+INSERT INTO clubes (nombre_club,id_profesor_supervisor,capacidad_maxima) VALUES (?,?,?)
+INSERT INTO eventos (nombre_evento,tipo_evento,fecha_evento,id_organizador) VALUES (?,?,?,?)
+INSERT INTO recursos (codigo_recurso,nombre_recurso,id_categoria,estado_recurso) VALUES (?,?,?,?)

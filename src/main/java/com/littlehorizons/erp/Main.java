@@ -1,6 +1,7 @@
 package com.littlehorizons.erp;
 
 import com.littlehorizons.erp.util.InputValidator;
+import com.littlehorizons.erp.util.EndOfInputException;
 import com.littlehorizons.erp.util.LoggerUtil;
 import com.littlehorizons.erp.view.ConsoleView;
 
@@ -11,6 +12,14 @@ import com.littlehorizons.erp.view.ConsoleView;
 public class Main {
 
     public static void main(String[] args) {
+        try {
+            run(args);
+        } catch (EndOfInputException e) {
+            System.out.println("\nEntrada de consola finalizada. Sesión cerrada.");
+        }
+    }
+
+    private static void run(String[] args) {
         LoggerUtil.logInfo("Starting Little Horizons ERP Application...");
         System.out.println("╔══════════════════════════════════════════════════════════════╗");
         System.out.println("║            COLEGIO INTERNACIONAL LITTLE HORIZONS             ║");
@@ -33,6 +42,8 @@ public class Main {
                 try {
                     ConsoleView consoleView = new ConsoleView();
                     consoleView.start();
+                } catch (EndOfInputException e) {
+                    throw e;
                 } catch (Exception e) {
                     LoggerUtil.logError("Fatal unhandled exception in console view", e);
                     System.err.println("❌ Ha ocurrido un error inesperado. Los detalles han sido registrados en error_log.txt.");

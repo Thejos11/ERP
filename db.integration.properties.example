@@ -1,0 +1,6 @@
+# Copy to .local-secrets/integration.properties and complete locally.
+# No query parameters, alternate hosts, credentials in URL or other catalogs.
+db.url=jdbc:mysql://127.0.0.1:3306/erp_little_horizons_test
+db.user=erp_it_runner
+db.password=
+# A nonempty password and a dedicated, least-privilege account are mandatory.

@@ -89,14 +89,21 @@ public class ConsoleView {
     private void configureDatabase() {
         System.out.println("\n--- CONFIGURACIÓN DE CONEXIÓN A BASE DE DATOS ---");
         System.out.println("Configuración actual:");
-        System.out.println("URL: " + DatabaseConnection.getDbUrl());
-        System.out.println("Usuario: " + DatabaseConnection.getDbUser());
+        System.out.println("Los datos de conexion se mantienen ocultos por seguridad.");
         System.out.println("-------------------------------------------------");
 
         String url = InputValidator.readNonEmptyString("Nueva URL JDBC (o enter el default actual): ");
         String user = InputValidator.readNonEmptyString("Usuario MySQL: ");
-        String password = InputValidator.readOptionalString("Contraseña MySQL (dejar vacío si no tiene): ");
-        if (password == null) password = "";
+        java.io.Console console = System.console();
+        if (console == null) {
+            System.out.println("Configure db.properties: esta terminal no permite ocultar la contraseña.");
+            InputValidator.pause();
+            return;
+        }
+        char[] secret = console.readPassword("Contraseña MySQL (vacío solo si se configuró explícitamente así): ");
+        if (secret == null) return;
+        String password = new String(secret);
+        java.util.Arrays.fill(secret, '\0');
 
         DatabaseConnection.setCredentials(url, user, password);
         if (DatabaseConnection.getInstance().testConnection()) {

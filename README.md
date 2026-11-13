@@ -67,18 +67,13 @@ Para compilar y ejecutar el proyecto se requiere:
 ### 6.1. Creación de la Base de Datos
 El sistema se conecta a la base de datos llamada `erp_little_horizons`. Asegúrese de que el servidor MySQL se encuentre en ejecución y que la base de datos exista con su respectiva estructura de tablas.
 
-### 6.2. Configuración de Credenciales (`db.properties`)
-El proyecto cuenta con un archivo externo de configuración en la raíz del repositorio: **`db.properties`**.  
-Esto permite cambiar el usuario, la contraseña o la URL de conexión **en cualquier momento sin tocar ni recompilar el código fuente**:
+### 6.2. Configuración segura de credenciales
 
-```properties
-# Little Horizons ERP - Database Configuration
-db.url=jdbc:mysql://localhost:3306/erp_little_horizons?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Bogota
-db.user=root
-db.password=su_contraseña_aqui
-```
+Copie `db.properties` a `db.properties` en el directorio de ejecución y complete `db.url`, `db.user` y `db.password`. Use una cuenta dedicada para `erp_little_horizons`. No hay usuario `root`, contraseña ni URL predeterminados.
 
-Además, el sistema permite modificar y probar las credenciales en tiempo de ejecución directamente desde la **Opción 8** del menú principal de la consola.
+Los archivos locales se excluyen de Git y del empaquetado Maven. Se conserva la precedencia: archivo externo, classpath aportado externamente si no existe el archivo, y variables `DB_URL`, `DB_USER`, `DB_PASSWORD` para claves ausentes. Una contraseña vacía requiere configuración explícita.
+
+La opción 8 permite configuración temporal con entrada oculta. En terminales sin `Console`, configure el archivo local. Consulte [la guía de seguridad](docs/database-security.md) para detalles y respaldos.
 
 ### 6.3. Instalación del Driver JDBC
 El driver oficial `mysql-connector-j` se descarga y gestiona automáticamente mediante Maven a través del `pom.xml`:
@@ -189,7 +184,7 @@ ERP/
     │   │           ├── InputValidator.java      # Validaciones seguras de teclado
     │   │           └── InvoicePdfGenerator.java # Generador PDF & QR con OpenPDF/ZXing
     │   └── resources/
-    │       └── db.properties              # Configuración de respaldo en classpath
+    │       └── db.properties              # Archivo local ignorado; excluido del JAR
     └── test/
         └── java/
             └── com/littlehorizons/erp/util/

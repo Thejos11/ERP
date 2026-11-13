@@ -5,6 +5,7 @@ import com.littlehorizons.erp.model.AcademicRecord;
 import com.littlehorizons.erp.model.Attendance;
 import com.littlehorizons.erp.model.Subject;
 import com.littlehorizons.erp.model.SubjectEnrollment;
+import com.littlehorizons.erp.util.GradeValidator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,7 +20,15 @@ import java.util.stream.Collectors;
  */
 public class AcademicController {
 
-    private final AcademicDAO academicDAO = new AcademicDAO();
+    private final AcademicDAO academicDAO;
+
+    public AcademicController() {
+        this(new AcademicDAO());
+    }
+
+    public AcademicController(AcademicDAO academicDAO) {
+        this.academicDAO = java.util.Objects.requireNonNull(academicDAO);
+    }
 
     public boolean registerSubject(Subject subject) {
         if (subject == null || subject.getSubjectCode() == null || subject.getSubjectCode().isBlank()) {
@@ -52,7 +61,9 @@ public class AcademicController {
         if (record == null || record.getGradeValue() == null) {
             return false;
         }
-        if (record.getGradeValue().compareTo(BigDecimal.ZERO) < 0 || record.getGradeValue().compareTo(new BigDecimal("5.0")) > 0) {
+        try {
+            GradeValidator.validate(record.getGradeValue());
+        } catch (IllegalArgumentException e) {
             return false;
         }
         return academicDAO.recordGrade(record);
@@ -148,7 +159,7 @@ public class AcademicController {
     }
 
     public boolean recordAttendance(Attendance attendance) {
-        if (attendance == null || attendance.getStatus() == null) {
+        if (attendance == null || attendance.getStatus() == null || attendance.getAttendanceDate() == null) {
             return false;
         }
         return academicDAO.recordAttendance(attendance);

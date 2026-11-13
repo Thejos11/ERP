@@ -30,3 +30,12 @@ invoices/*.pdf
 
 # System logs
 error_log.txt
+
+# Local database credentials and private backups (all directories)
+db.properties
+db.properties.local
+db.properties.*.bak
+.local-secrets/
+db.integration.properties
+db.integration.properties.*
+!db.integration.properties.example
